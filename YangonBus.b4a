@@ -1,0 +1,162 @@
+﻿Version=6.5
+NumberOfModules=1
+Module1=Starter
+Build1=Default,com.htetznaing.yangonbus
+ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: http://www.b4x.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="5" android:targetSdkVersion="19"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>)~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~'End of default text.~\n~'AdMob~\n~AddApplicationText(~\n~<meta-data android:name="com.google.android.gms.version"~\n~  android:value="@integer/google_play_services_version"/>~\n~<activity android:name="com.google.android.gms.ads.AdActivity"~\n~  android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>~\n~)~\n~'End of AdMob~\n~
+IconFile=
+NumberOfFiles=2
+File1=fb.png
+File2=lay1.bal
+NumberOfLibraries=9
+Library1=core
+Library2=webviewsettings
+Library3=mwadmobinterstitial2 (2)
+Library4=admob
+Library5=abzipunzip
+Library6=reflection
+Library7=floatingactionbutton
+Library8=xmllayoutbuilder
+Library9=clipboard
+@EndOfDesignText@
+#Region  Project Attributes 
+	#ApplicationLabel: Yangon Bus
+	#VersionCode: 1
+	#VersionName: 1.0
+	'SupportedOrientations possible values: unspecified, landscape or portrait.
+	#SupportedOrientations: unspecified
+	#CanInstallToExternalStorage: False
+	#AdditionalRes: D:\Android\android-sdk\extras\google\google-play-services\libproject\google-play-services_lib\res, com.google.android.gms
+#End Region
+
+#Region  Activity Attributes 
+	#FullScreen: False
+	#IncludeTitle: False
+	#AdditionalRes: C:\Users\Ht3tzN4ing\Documents\My Projects\Yangon Bus\FloatingButton, de.amberhome.objects.floatingactionbutton
+	#AdditionalRes: ..\resource
+#End Region
+
+Sub Process_Globals
+	Dim ad2 As Timer
+End Sub
+
+Sub Globals
+Dim wb As WebView
+Dim wv As WebViewSettings
+
+	Dim Banner As AdView
+	Dim Interstitial As mwAdmobInterstitial
+	
+	Dim fb,fb1 As FloatingActionButton
+Dim res As XmlLayoutBuilder
+Dim b As Button
+Dim copy As BClipboard
+End Sub
+
+Sub Activity_Create(FirstTime As Boolean)
+	Activity.LoadLayout("lay1")
+	fb.Icon = res.GetDrawable("ic_add_white_24dp")
+	fb.HideOffset = 100%y - fb.Top
+	fb.Hide(False)
+	fb.Show(True)
+	
+	fb1.Icon = res.GetDrawable("about")
+	fb1.HideOffset = 100%y - fb.Top
+	fb1.Hide(False)
+	fb1.Show(True)
+	
+wb.Initialize("wb")
+	wb.LoadUrl("http://www.htetznaing.com/YangonBus")
+	ProgressDialogShow("Loading...")
+	Activity.AddView(wb,0%x,0%y,100%x,100%y)
+	wv.setDisplayZoomControls(wb, False)
+	
+	Banner.Initialize("Banner","ca-app-pub-4173348573252986/1574643357")
+	Banner.LoadAd
+	Activity.AddView(Banner,0%x,100%y - 50dip,100%x,50dip)
+		
+	Interstitial.Initialize("Interstitial","ca-app-pub-4173348573252986/3051376550")
+	Interstitial.LoadAd
+		
+	ad2.Initialize("ad2",30000)
+	ad2.Enabled = True
+End Sub
+
+Sub b_Click
+	wb.LoadUrl("http://www.htetznaing.com/howtoyangonbus/")
+	ProgressDialogShow("Please Wait...")
+End Sub
+
+Sub fb_Click
+	ToastMessageShow("App Update နွင့္ App အသစ္ေတြ " & CRLF & "Facebook ကေနဖတ္ရူ့သိနိုင္ဖို့" &CRLF& "Myanmar Android Apps ကို Like ထားလိုက္ပါ။",True)
+	Try
+ 
+		Dim Facebook As Intent
+ 
+		Facebook.Initialize(Facebook.ACTION_VIEW, "fb://page/627699334104477")
+		StartActivity(Facebook)
+ 
+	Catch
+ 
+		Dim i As Intent
+		i.Initialize(i.ACTION_VIEW, "https://m.facebook.com/MmFreeAndroidApps")
+ 
+		StartActivity(i)
+ 
+	End Try
+End Sub
+
+Sub fb1_Click
+	Dim ShareIt As Intent
+	copy.clrText
+	copy.setText("#YangonBus Free Android App!" &CRLF & "Download Free at : www.HtetzNaing.com/YangonBus" &CRLF & " #Ht3tzN4ing" &CRLF & " #MyanmarAndroidApps")
+	ShareIt.Initialize (ShareIt.ACTION_SEND,"")
+	ShareIt.SetType ("text/plain")
+	ShareIt.PutExtra ("android.intent.extra.TEXT",copy.getText)
+	ShareIt.PutExtra ("android.intent.extra.SUBJECT","Get Free!!")
+	ShareIt.WrapAsIntentChooser("Share App Via...")
+	StartActivity (ShareIt)
+	
+End Sub
+
+Sub ad2_Tick
+		If Interstitial.Status = Interstitial.Status_AdReadyToShow Then
+			Interstitial.Show
+		End If
+	
+		If Interstitial.Status = Interstitial.Status_Dismissed Then
+			Interstitial.LoadAd
+	End If
+		
+	Banner.Initialize("Banner","ca-app-pub-4173348573252986/6858160559")
+	Banner.LoadAd
+	Activity.AddView(Banner,0%x,100%y - 50dip,100%x,50dip)
+		
+	Interstitial.Initialize("Interstitial","ca-app-pub-4173348573252986/8334893759")
+	Interstitial.LoadAd
+		
+	ad2.Initialize("ad2",30000)
+	ad2.Enabled = True
+End Sub
+
+Sub wb_OverrideUrl (Url As String)  As Boolean
+   ProgressDialogShow("Loading...")
+End Sub
+
+Sub wb_PageFinished (Url As String)
+	ProgressDialogHide
+End Sub
+
+Sub Activity_Resume
+
+End Sub
+
+Sub Activity_Pause (UserClosed As Boolean)
+
+End Sub
+
+Sub Activity_KeyPress (KeyCode As Int) As Boolean
+	If KeyCode = KeyCodes.KEYCODE_BACK Then
+		wb.Back
+		Return True
+	End If
+End Sub
