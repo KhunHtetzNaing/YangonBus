@@ -1,31 +1,32 @@
 ﻿Version=6.5
-NumberOfModules=1
-Module1=Starter
-Build1=Default,com.htetznaing.yangonbus
-ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: http://www.b4x.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="5" android:targetSdkVersion="19"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>)~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~'End of default text.~\n~'AdMob~\n~AddApplicationText(~\n~<meta-data android:name="com.google.android.gms.version"~\n~  android:value="@integer/google_play_services_version"/>~\n~<activity android:name="com.google.android.gms.ads.AdActivity"~\n~  android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>~\n~)~\n~'End of AdMob~\n~
+NumberOfModules=2
+Module1=How
+Module2=Starter
+Build1=Default,com.htetznaing.yangonbus2
+ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: http://www.b4x.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="5" android:targetSdkVersion="23"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>)~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~'End of default text.~\n~~\n~'************ Google Play Services Base ************~\n~AddApplicationText(~\n~   <activity android:name="com.google.android.gms.common.api.GoogleApiActivity"~\n~  android:theme="@android:style/Theme.Translucent.NoTitleBar"~\n~  android:exported="false"/>~\n~    <meta-data~\n~  android:name="com.google.android.gms.version"~\n~  android:value="@integer/google_play_services_version" />~\n~)~\n~'************ Google Play Services Base (end) ************~\n~'************ Firebase Ads ************~\n~AddApplicationText(~\n~  <activity~\n~  android:name="com.google.android.gms.ads.AdActivity"~\n~  android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"~\n~  android:theme="@android:style/Theme.Translucent" />~\n~  <activity android:name="com.google.android.gms.ads.purchase.InAppPurchaseActivity"~\n~  android:theme="@style/Theme.IAPTheme"/>~\n~)~\n~'************ Firebase Ads (end) ************~\n~
 IconFile=
-NumberOfFiles=2
-File1=fb.png
-File2=lay1.bal
+NumberOfFiles=3
+File1=how.png
+File2=how.zip
+File3=lay1.bal
 NumberOfLibraries=9
 Library1=core
 Library2=webviewsettings
-Library3=mwadmobinterstitial2 (2)
-Library4=admob
-Library5=abzipunzip
-Library6=reflection
-Library7=floatingactionbutton
-Library8=xmllayoutbuilder
-Library9=clipboard
+Library3=firebaseadmob
+Library4=abzipunzip
+Library5=floatingactionbutton
+Library6=xmllayoutbuilder
+Library7=clipboard
+Library8=httputils2
+Library9=mlfiles
 @EndOfDesignText@
-#Region  Project Attributes 
-	#ApplicationLabel: Yangon Bus
-	#VersionCode: 1
-	#VersionName: 1.0
+         #Region  Project Attributes 
+	#ApplicationLabel: Yangon Bus [New]
+	#VersionCode: 2
+	#VersionName: 1.1
 	'SupportedOrientations possible values: unspecified, landscape or portrait.
 	#SupportedOrientations: unspecified
 	#CanInstallToExternalStorage: False
-	#AdditionalRes: D:\Android\android-sdk\extras\google\google-play-services\libproject\google-play-services_lib\res, com.google.android.gms
 #End Region
 
 #Region  Activity Attributes 
@@ -44,12 +45,18 @@ Dim wb As WebView
 Dim wv As WebViewSettings
 
 	Dim Banner As AdView
-	Dim Interstitial As mwAdmobInterstitial
+	Dim Interstitial As InterstitialAd
 	
 	Dim fb,fb1 As FloatingActionButton
 Dim res As XmlLayoutBuilder
 Dim b As Button
 Dim copy As BClipboard
+Dim zip As ABZipUnzip
+
+Dim sd As String = File.DirRootExternal & "/"
+Dim d As HttpJob
+Dim url1 As String
+	Dim ml As MLfiles
 End Sub
 
 Sub Activity_Create(FirstTime As Boolean)
@@ -65,25 +72,91 @@ Sub Activity_Create(FirstTime As Boolean)
 	fb1.Show(True)
 	
 wb.Initialize("wb")
-	wb.LoadUrl("http://www.htetznaing.com/YangonBus")
-	ProgressDialogShow("Loading...")
+
+	If File.Exists(File.DirRootExternal  & "/.YangonBus/yangonbus.com/","index.html") = False Then
+		ToastMessageShow("Using in Online Mode",True)
+		wb.loadUrl ("http://www.yangonbus.com")
+		ProgressDialogShow("Loading...")
+				Else
+					ToastMessageShow("Using in Offline Mode",True)
+	wb.loadUrl ("file:///" & File.DirRootExternal & "/.YangonBus/yangonbus.com/index.html")
+		ProgressDialogShow("Loading...")
+		End If
 	Activity.AddView(wb,0%x,0%y,100%x,100%y)
 	wv.setDisplayZoomControls(wb, False)
 	
-	Banner.Initialize("Banner","ca-app-pub-4173348573252986/1574643357")
+	'Ads
+	Banner.Initialize("Banner","ca-app-pub-4173348573252986/6966540950")
 	Banner.LoadAd
 	Activity.AddView(Banner,0%x,100%y - 50dip,100%x,50dip)
-		
-	Interstitial.Initialize("Interstitial","ca-app-pub-4173348573252986/3051376550")
+	
+	Interstitial.Initialize("Interstitial","ca-app-pub-4173348573252986/8443274158")
 	Interstitial.LoadAd
-		
-	ad2.Initialize("ad2",30000)
+	ad2.Initialize("ad2",300000)
 	ad2.Enabled = True
+'Ads
+	
+	Activity.AddMenuItem("Offline Mode","uo")
+	Activity.AddMenuItem("Online Mode","om")
+	Activity.AddMenuItem("Restart","rf")
+	Activity.AddMenuItem("Check Update","cu")
+	Activity.AddMenuItem("More App","ma")
+	Activity.AddMenuItem("Exit App","ea")
+End Sub
+
+Sub ma_Click
+	Dim ii As Intent
+	ii.Initialize(ii.ACTION_VIEW,"https://play.google.com/store/apps/dev?id=7613861041148492843")
+	StartActivity(ii)
+	ii.WrapAsIntentChooser("Open With..")
+End Sub
+
+Sub cu_Click
+	Dim ii As Intent
+	ii.Initialize(ii.ACTION_VIEW,"https://play.google.com/store/apps/details?id=com.htetznaing.yangonbus")
+	StartActivity(ii)
+	ii.WrapAsIntentChooser("Open With..")
+End Sub
+
+Sub om_Click
+	wb.loadUrl ("http://www.yangonbus.com")
+	ProgressDialogShow("Loading...")
+	ToastMessageShow("Using in Online Mode",True)
+End Sub
+
+Sub rf_CLick
+	Activity.Finish
+	StartActivity(Me)
+End Sub
+
+Sub ea_Click
+	Activity.Finish
+End Sub
+
+Sub uo_Click
+	If File.Exists(File.DirRootExternal  & "/.YangonBus/yangonbus.com/","index.html") = True Then
+		wb.loadUrl ("file:///" & File.DirRootExternal & "/.YangonBus/yangonbus.com/index.html")
+		ProgressDialogShow("Loading...")
+		ToastMessageShow("Using in Offline Mode",True)
+		Else
+	'DownloadFIle
+	d.Initialize("d",Me)
+		url1 ="http://mmapp.ml/YBS/YangonBus.zip"
+	d.Download(url1)
+	ProgressDialogShow("Downloading data...")
+	End If
+	'End Download
 End Sub
 
 Sub b_Click
-	wb.LoadUrl("http://www.htetznaing.com/howtoyangonbus/")
-	ProgressDialogShow("Please Wait...")
+	If File.Exists(File.DirRootExternal  & "/MyanmarAndroidApps","how.jpg") = False Then
+File.Copy(File.DirAssets,"how.zip",File.DirRootExternal,"how.zip")
+		zip.ABUnzip(sd & "how.zip",sd & "MyanmarAndroidApps")
+		File.Delete(File.DirRootExternal , "how.zip")
+		StartActivity(How)
+		Else
+		StartActivity(How)
+	End If
 End Sub
 
 Sub fb_Click
@@ -108,55 +181,68 @@ End Sub
 Sub fb1_Click
 	Dim ShareIt As Intent
 	copy.clrText
-	copy.setText("#YangonBus Free Android App!" &CRLF & "Download Free at : www.HtetzNaing.com/YangonBus" &CRLF & " #Ht3tzN4ing" &CRLF & " #MyanmarAndroidApps")
+	copy.setText("#YangonBus Free Android App!" &CRLF & "Download Free at : http://www.htetznaing.com/YangonBusApp/" &CRLF & " #Ht3tzN4ing" &CRLF & " #MyanmarAndroidApps")
 	ShareIt.Initialize (ShareIt.ACTION_SEND,"")
 	ShareIt.SetType ("text/plain")
 	ShareIt.PutExtra ("android.intent.extra.TEXT",copy.getText)
 	ShareIt.PutExtra ("android.intent.extra.SUBJECT","Get Free!!")
 	ShareIt.WrapAsIntentChooser("Share App Via...")
 	StartActivity (ShareIt)
-	
 End Sub
 
 Sub ad2_Tick
-		If Interstitial.Status = Interstitial.Status_AdReadyToShow Then
-			Interstitial.Show
-		End If
-	
-		If Interstitial.Status = Interstitial.Status_Dismissed Then
-			Interstitial.LoadAd
-	End If
-		
-	Banner.Initialize("Banner","ca-app-pub-4173348573252986/6858160559")
-	Banner.LoadAd
-	Activity.AddView(Banner,0%x,100%y - 50dip,100%x,50dip)
-		
-	Interstitial.Initialize("Interstitial","ca-app-pub-4173348573252986/8334893759")
-	Interstitial.LoadAd
-		
-	ad2.Initialize("ad2",30000)
-	ad2.Enabled = True
+	If Interstitial.Ready Then Interstitial.Show
 End Sub
 
-Sub wb_OverrideUrl (Url As String)  As Boolean
+Sub wb_OverrideUrl (url As String)  As Boolean
    ProgressDialogShow("Loading...")
 End Sub
 
-Sub wb_PageFinished (Url As String)
+Sub wb_PageFinished (url As String)
 	ProgressDialogHide
 End Sub
 
 Sub Activity_Resume
-
+Log(wb.Url)
 End Sub
 
 Sub Activity_Pause (UserClosed As Boolean)
 
 End Sub
 
+
+
 Sub Activity_KeyPress (KeyCode As Int) As Boolean
 	If KeyCode = KeyCodes.KEYCODE_BACK Then
+		Log(wb.Url)
+		Dim Url As String
+		Url = wb.Url
+		If Url.EndsWith(".YangonBus/yangonbus.com/index.html") Or Url = "http://www.yangonbus.com/" Then
+			Return False
+			Else
 		wb.Back
 		Return True
+		End If
 	End If
+End Sub
+
+Sub JobDone (Job As HttpJob)
+	If Job.Success = True Then
+		Dim out As OutputStream
+		out = File.OpenOutput(File.DirRootExternal,"YangonBus.zip",False )
+		File.Copy2(Job.GetInputStream, out)
+		out.Close
+		ml.rmrf(File.DirRootExternal & ".YangonBus")
+		zip.ABUnzip(sd & "YangonBus.zip",sd & ".YangonBus")
+		File.Delete(File.DirRootExternal,"YangonBus.zip")
+		Msgbox("Congratulations!" & CRLF & "Now! you can using Offline!","Completed")
+		Activity.Finish
+		StartActivity(Me)
+		Else
+			Msgbox("Error","")
+			End If
+End Sub
+
+Sub Interstitial_AdClosed
+Interstitial.LoadAd
 End Sub
